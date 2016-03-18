@@ -19,6 +19,7 @@ public class AnagramDictionary {
     private HashSet<String> wordSet = new HashSet<String>();
     private ArrayList<String> wordList = new ArrayList<String>();
     private HashMap<String,ArrayList> lettersToWord = new HashMap<String,ArrayList>();
+    private  HashMap<Integer, ArrayList> sizetoWord = new HashMap<>();
 
     public AnagramDictionary(InputStream wordListStream) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(wordListStream));
@@ -33,6 +34,13 @@ public class AnagramDictionary {
                 ArrayList<String> anagrams = new ArrayList<String>();
                 anagrams.add(word);
                 lettersToWord.put(sortLetters(word), anagrams);
+            }
+            if(sizetoWord.containsKey(word.length()))
+                sizetoWord.get(word.length()).add(word);  // add the word to the list if the sorted key is already in hash map
+            else {
+                ArrayList<String> list = new ArrayList<String>();
+                list.add(word);
+                sizetoWord.put(word.length(), list);
             }
            // Log.i("WORD :",word);
         }
@@ -66,19 +74,51 @@ public class AnagramDictionary {
             if(lettersToWord.containsKey(sortLetters(word+(ch)))){
                 anagrams = lettersToWord.get(sortLetters(word+ch));
                 for (String temp : anagrams)
+                    if(!temp.contains(word))
                     result.add(temp);
             }
             ch++;
         }
 
         return result;
+
+    }
+
+    public ArrayList<String> getAnagramsWithTwoMoreLetter(String word) {
+        ArrayList<String> result = new ArrayList<String>();
+        char ch = 'a';
+        char c;
+        ArrayList<String> anagrams;
+        for(int i =0;i<26 ;i++) {
+            c = 'a';
+            for(int j =0;j<26 ;j++) {
+                if (lettersToWord.containsKey(sortLetters(word + ch + c))) {
+                    anagrams = lettersToWord.get(sortLetters(word + ch + c));
+                    for (String temp : anagrams)
+                        if (!temp.contains(word))
+                            result.add(temp);
+                }
+                c++;
+            }
+            ch++;
+        }
+
+        return result;
+
     }
 
     public String pickGoodStarterWord() {
 //        return "pot";
-        int i = random.nextInt(wordList.size());
-        while(getAnagramsWithOneMoreLetter(wordList.get(i)).size() < MIN_NUM_ANAGRAMS)
-                i = random.nextInt(wordList.size());
-        return wordList.get(i);
+
+        ArrayList<String> wordSizeList = sizetoWord.get(DEFAULT_WORD_LENGTH);
+        int i = random.nextInt(wordSizeList.size());
+        while(getAnagramsWithTwoMoreLetter(wordSizeList.get(i)).size() < MIN_NUM_ANAGRAMS)
+            i = random.nextInt(sizetoWord.size());
+        return wordSizeList.get(i);
+
+//        int i = random.nextInt(wordList.size());
+//        while(getAnagramsWithOneMoreLetter(wordList.get(i)).size() < MIN_NUM_ANAGRAMS)
+//                i = random.nextInt(wordList.size());
+//        return wordList.get(i);
     }
 }
