@@ -19,7 +19,8 @@ public class AnagramDictionary {
     private HashSet<String> wordSet = new HashSet<String>();
     private ArrayList<String> wordList = new ArrayList<String>();
     private HashMap<String,ArrayList> lettersToWord = new HashMap<String,ArrayList>();
-    private  HashMap<Integer, ArrayList> sizetoWord = new HashMap<>();
+    private  HashMap<Integer, ArrayList> sizetoWords = new HashMap<>();
+    private int wordLength= DEFAULT_WORD_LENGTH;
 
     public AnagramDictionary(InputStream wordListStream) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(wordListStream));
@@ -35,12 +36,12 @@ public class AnagramDictionary {
                 anagrams.add(word);
                 lettersToWord.put(sortLetters(word), anagrams);
             }
-            if(sizetoWord.containsKey(word.length()))
-                sizetoWord.get(word.length()).add(word);  // add the word to the list if the sorted key is already in hash map
+            if(sizetoWords.containsKey(word.length()))
+                sizetoWords.get(word.length()).add(word);  // add the word to the list if the sorted key is already in hash map
             else {
                 ArrayList<String> list = new ArrayList<String>();
                 list.add(word);
-                sizetoWord.put(word.length(), list);
+                sizetoWords.put(word.length(), list);
             }
            // Log.i("WORD :",word);
         }
@@ -66,6 +67,7 @@ public class AnagramDictionary {
         }
         return false;
     }
+
     public ArrayList<String> getAnagramsWithOneMoreLetter(String word) {
         ArrayList<String> result = new ArrayList<String>();
         char ch = 'a';
@@ -102,7 +104,6 @@ public class AnagramDictionary {
             }
             ch++;
         }
-
         return result;
 
     }
@@ -110,12 +111,15 @@ public class AnagramDictionary {
     public String pickGoodStarterWord() {
 //        return "pot";
 
-        ArrayList<String> wordSizeList = sizetoWord.get(DEFAULT_WORD_LENGTH);
+        wordLength = random.nextInt(MAX_WORD_LENGTH-DEFAULT_WORD_LENGTH)+DEFAULT_WORD_LENGTH;
+        ArrayList<String> wordSizeList = sizetoWords.get(wordLength);
         int i = random.nextInt(wordSizeList.size());
         while(getAnagramsWithTwoMoreLetter(wordSizeList.get(i)).size() < MIN_NUM_ANAGRAMS)
-            i = random.nextInt(sizetoWord.size());
+            i = random.nextInt(sizetoWords.size());
+//        if(wordLength==MAX_WORD_LENGTH)
+//            wordLength = DEFAULT_WORD_LENGTH;
         return wordSizeList.get(i);
-
+//
 //        int i = random.nextInt(wordList.size());
 //        while(getAnagramsWithOneMoreLetter(wordList.get(i)).size() < MIN_NUM_ANAGRAMS)
 //                i = random.nextInt(wordList.size());
