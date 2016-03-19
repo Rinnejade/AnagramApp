@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +31,7 @@ public class AnagramsActivity extends AppCompatActivity {
     private AnagramDictionary dictionary;
     private String currentWord;
     private ArrayList<String> anagrams;
+    private boolean flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +72,15 @@ public class AnagramsActivity extends AppCompatActivity {
             return;
         }
         String color = "#cc0029";
+        if(word.endsWith("buhaha")) {
+            Log.i("found",word);
+            flag = true;
+        }
         if (dictionary.isGoodWord(word, currentWord) && anagrams.contains(word)) {
             anagrams.remove(word);
+            dictionary.updateLevelScore();
+            TextView levelScore = (TextView) findViewById(R.id.levelscore);
+            levelScore.setText("LEVEL SCORE : "+ dictionary.getLevelScore());
             color = "#00aa29";
         } else {
             word = "X " + word;
@@ -109,10 +118,16 @@ public class AnagramsActivity extends AppCompatActivity {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         EditText editText = (EditText) findViewById(R.id.editText);
         TextView resultView = (TextView) findViewById(R.id.resultView);
+        TextView levelScore = (TextView) findViewById(R.id.levelscore);
+        TextView level = (TextView) findViewById(R.id.level);
+        TextView totalScore = (TextView) findViewById(R.id.totalscore);
         if (currentWord == null) {
             currentWord = dictionary.pickGoodStarterWord();
-            anagrams = dictionary.getAnagramsWithTwoMoreLetter(currentWord);
+            anagrams = dictionary.getAnagramsWithOneMoreLetter(currentWord);
             gameStatus.setText(Html.fromHtml(String.format(START_MESSAGE, currentWord.toUpperCase(), currentWord)));
+            totalScore.setText("TOTAL SCORE : " + dictionary.getTotalScore());
+            levelScore.setText("LEVEL SCORE : "+dictionary.getLevelScore());
+            level.setText("LEVEL : "+ dictionary.getLevel());
             fab.setImageResource(android.R.drawable.ic_menu_help);
             fab.hide();
             resultView.setText("");
@@ -128,6 +143,10 @@ public class AnagramsActivity extends AppCompatActivity {
             currentWord = null;
             resultView.append(TextUtils.join("\n", anagrams));
             gameStatus.append(" Hit 'Play' to start again");
+            if((dictionary.getLevelScore()>2) || flag==true){
+                dictionary.updateLevel();
+                flag = dictionary.setFalseTotalScore();
+            }
         }
         return true;
     }
